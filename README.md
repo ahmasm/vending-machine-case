@@ -1,0 +1,65 @@
+# Vending Machine Case
+
+ASELSAN interview case implementation built with Java 25, Spring Boot 3.5.16, Maven, and PostgreSQL. The code applies DDD and hexagonal architecture around one authoritative `VendingMachine` aggregate and one deployable service.
+
+## Case coverage
+
+The service supports session start, money insertion, product selection, change, refund, product/session/purchase queries, inactivity recovery, and the ten products supplied by the case. Money is stored as `long` minor units; accepted denominations use bounded integer quantities.
+
+Domain events describe completed business facts. `PurchaseCompleted` is handled synchronously in-process to persist the immutable purchase in the same PostgreSQL transaction as stock, cash, session, and idempotency state. The case defines no external event consumer, so Kafka, an outbox, an audit service, and microservice decomposition are intentionally outside the current scope.
+
+## REST API
+
+- `GET /api/v1/machines/{machineId}/products`
+- `POST /api/v1/machines/{machineId}/sessions`
+- `GET /api/v1/machines/{machineId}/sessions/{sessionId}`
+- `POST /api/v1/machines/{machineId}/sessions/{sessionId}/money`
+- `POST /api/v1/machines/{machineId}/sessions/{sessionId}/selection`
+- `POST /api/v1/machines/{machineId}/sessions/{sessionId}/refund`
+- `GET /api/v1/machines/{machineId}/purchases/{transactionId}`
+
+Every command requires an `Idempotency-Key` header. Responses carry `X-Correlation-Id`; errors use `application/problem+json`. OpenAPI JSON is at `/v3/api-docs` and Swagger UI at `/swagger-ui.html`.
+
+## Build
+
+Prerequisites are JDK 25 and Docker. Docker is used by PostgreSQL Testcontainers during integration tests; a global Maven installation is not needed.
+
+```shell
+./mvnw clean verify
+```
+
+The checked-in wrapper uses Maven 3.9.16.
+
+## Run the demo
+
+```shell
+cp .env.example .env
+# Replace the example password in .env.
+docker compose up --build -d
+docker compose ps
+curl http://localhost:8080/actuator/health
+curl http://localhost:8080/api/v1/machines/VM-001/products
+```
+
+Docker Compose enables the isolated `db/demo` Flyway location. It creates `VM-001`, change inventory, stock quantity 10, and these exact case products:
+
+| Slot | Product | Price |
+|---|---|---:|
+| A1 | Water | 25 |
+| A2 | Coke | 35 |
+| A3 | Soda | 45 |
+| A4 | Snickers | 50 |
+| A5 | Chips | 40 |
+| B1 | Candy Bar | 30 |
+| B2 | Energy Drink | 60 |
+| B3 | Juice Box | 55 |
+| B4 | Protein Bar | 45 |
+| B5 | Gum | 20 |
+
+Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
+
+## Design notes
+
+The implementation keeps the domain free of Spring, JPA, HTTP, and JSON annotations. PostgreSQL transactions, command idempotency, `@Version`, and `OPTIMISTIC_FORCE_INCREMENT` protect the aggregate when child rows change. The inactivity scheduler revalidates each candidate inside the mutation transaction before expiring and refunding a session.
+
+Accepted assumptions and design decisions are documented in [`docs/assumptions.md`](docs/assumptions.md) and [`docs/system-design.md`](docs/system-design.md).
