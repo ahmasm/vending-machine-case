@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
 import io.github.ahmasm.vending.machine.application.command.StartSessionResult;
-import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
+import io.github.ahmasm.vending.machine.domain.machine.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.machine.ActiveSessionAlreadyExistsException;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.SessionId;

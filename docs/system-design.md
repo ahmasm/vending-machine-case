@@ -25,11 +25,10 @@ flowchart LR
 |---|---|
 | `vending-machine-service` | Authoritative machines, product availability, sessions, stock, cash, purchases, command results, REST API, recovery, and domain-event handling |
 
-The domain is framework-independent. Spring, HTTP, JPA and JSON models remain outside it.
-The application layer is organized by use case: commands live beside the service that
-handles them, while shared idempotency and replay result types live in `application.command`.
-Only genuine outbound technology boundaries use the `application.port.out` package; no
-mirror-image inbound-port package is maintained for plain data records.
+The service uses pragmatic layered DDD. Its framework-independent domain contains aggregates,
+value objects and repository contracts. The application layer is organized by use case; web,
+scheduling, persistence and validation packages contain technology-facing code. Boundary
+interfaces live beside the domain or application feature that owns them.
 
 ## Domain boundary
 
@@ -91,7 +90,7 @@ One successful local transaction:
 7. stores the stable processed-command result;
 8. commits before returning product and change.
 
-Currency validation happens through a side-effect-free port before this transaction. The client submits a validator reference rather than an authoritative denomination or `isAuthentic` flag. An accepted validator result supplies the denomination; rejection or outage does not mutate domain or processed-command state.
+Currency validation happens through a side-effect-free boundary interface before this transaction. The client submits a validator reference rather than an authoritative denomination or `isAuthentic` flag. An accepted validator result supplies the denomination; rejection or outage does not mutate domain or processed-command state.
 
 ## Reliability layers
 
@@ -110,9 +109,9 @@ Synchronous handling is deliberate: all current consequences belong to the same 
 
 REST v1 exposes product availability, session start/query, validated money insertion, selection, refund, and purchase lookup. State changes require `Idempotency-Key`; failures use `application/problem+json` with stable codes and correlation IDs.
 
-The case delivery includes a deterministic simulator under the explicit `demo` profile so accepted, counterfeit, unreadable, unsupported, and unavailable outcomes are repeatable. Outside that profile the validator fails closed; a real deployment replaces the outbound adapter with an authenticated hardware integration. Simulator references are test fixtures, not proof of production authenticity.
+The case delivery includes a deterministic simulator under the explicit `demo` profile so accepted, counterfeit, unreadable, unsupported, and unavailable outcomes are repeatable. Outside that profile the validator fails closed; a real deployment replaces the simulator with an authenticated hardware integration. Simulator references are test fixtures, not proof of production authenticity.
 
-Core persistence contains machine, slot product snapshots, cash inventory, session tender, immutable purchases, and processed-command results. JPA entities remain in adapters; Flyway owns the schema; PostgreSQL Testcontainers validates migrations and constraints.
+Core persistence contains machine, slot product snapshots, cash inventory, session tender, immutable purchases, and processed-command results. JPA entities remain in the persistence layer; Flyway owns the schema; PostgreSQL Testcontainers validates migrations and constraints.
 
 The provided ten products are provisioned repeatably for the local case demonstration with positive stock and deterministic initial cash inventory.
 
@@ -121,6 +120,7 @@ The provided ten products are provisioned repeatably for the local case demonstr
 | Choice | Reason |
 |---|---|
 | One authoritative service | Stock, escrow, cash, and purchase need one consistency boundary. |
+| Feature-oriented layered packages | Keeps use cases and technology details easy to find while the domain stays framework-independent. |
 | PostgreSQL + Flyway | Transactions, constraints, locking, and partial indexes fit the model. |
 | Integer money and escrow | Monetary precision and exact-composition refund. |
 | Validator-owned denomination | Neither authenticity nor accepted value is trusted from the HTTP client. |

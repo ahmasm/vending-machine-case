@@ -1,6 +1,5 @@
 package io.github.ahmasm.vending.machine.application.purchase;
 
-import io.github.ahmasm.vending.machine.application.port.out.PurchaseStore;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.Purchase;
 import io.github.ahmasm.vending.machine.domain.machine.TransactionId;

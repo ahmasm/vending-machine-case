@@ -1,6 +1,5 @@
 package io.github.ahmasm.vending.machine.application.session;
 
-import io.github.ahmasm.vending.machine.application.port.out.SessionExpiryCandidateFinder;
 import io.github.ahmasm.vending.machine.configuration.SessionExpiryProperties;
 import io.github.ahmasm.vending.machine.domain.machine.ActiveSessionNotFoundException;
 import io.github.ahmasm.vending.machine.domain.machine.SessionNotExpiredException;

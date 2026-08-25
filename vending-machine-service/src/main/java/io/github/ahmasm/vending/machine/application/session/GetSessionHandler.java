@@ -1,6 +1,5 @@
 package io.github.ahmasm.vending.machine.application.session;
 
-import io.github.ahmasm.vending.machine.application.port.out.PurchaseSessionReader;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.PurchaseSessionState;
 import io.github.ahmasm.vending.machine.domain.machine.SessionId;

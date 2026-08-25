@@ -1,6 +1,6 @@
 package io.github.ahmasm.vending.machine.application.session;
 
-import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
+import io.github.ahmasm.vending.machine.domain.machine.VendingMachineRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;

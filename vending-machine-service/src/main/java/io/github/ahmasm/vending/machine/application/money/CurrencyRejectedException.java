@@ -1,6 +1,5 @@
 package io.github.ahmasm.vending.machine.application.money;
 
-import io.github.ahmasm.vending.machine.application.port.out.CurrencyRejectionReason;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import java.util.Objects;
 

@@ -1,6 +1,6 @@
 package io.github.ahmasm.vending.machine.application.event;
 
-import io.github.ahmasm.vending.machine.application.port.out.PurchaseStore;
+import io.github.ahmasm.vending.machine.application.purchase.PurchaseStore;
 import io.github.ahmasm.vending.machine.domain.machine.event.PurchaseCompleted;
 import java.util.Objects;
 import org.springframework.context.event.EventListener;

@@ -17,7 +17,7 @@ import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
 import io.github.ahmasm.vending.machine.application.command.SelectProductResult;
 import io.github.ahmasm.vending.machine.application.money.InsertMoneyCommand;
 import io.github.ahmasm.vending.machine.application.money.InsertMoneyService;
-import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
+import io.github.ahmasm.vending.machine.domain.machine.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import io.github.ahmasm.vending.machine.domain.machine.InsufficientBalanceException;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;

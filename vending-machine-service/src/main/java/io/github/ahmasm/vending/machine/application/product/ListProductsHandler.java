@@ -4,7 +4,6 @@ import static io.github.ahmasm.vending.machine.application.product.ListProductsH
 import static io.github.ahmasm.vending.machine.application.product.ListProductsHandler.Availability.OUT_OF_STOCK;
 
 import io.github.ahmasm.vending.machine.application.command.MachineNotFoundException;
-import io.github.ahmasm.vending.machine.application.port.out.ProductCatalogReader;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.ProductSnapshot;
 import io.github.ahmasm.vending.machine.domain.machine.SlotCode;

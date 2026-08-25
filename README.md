@@ -1,6 +1,6 @@
 # Vending Machine Case
 
-ASELSAN interview case implementation built with Java 25, Spring Boot 3.5.16, Maven, and PostgreSQL. The code applies DDD and hexagonal architecture around one authoritative `VendingMachine` aggregate and one deployable service.
+ASELSAN interview case implementation built with Java 25, Spring Boot 3.5.16, Maven, and PostgreSQL. The code applies pragmatic layered DDD around one authoritative `VendingMachine` aggregate and one deployable service.
 
 ## Case coverage
 
@@ -72,7 +72,7 @@ Docker Compose also enables the explicit `demo` profile. Its deterministic curre
 | `SIM-UNSUPPORTED` | Rejected as unsupported denomination |
 | `SIM-OFFLINE` | Validator unavailable |
 
-Unknown references are rejected. Outside the `demo` profile the bundled adapter fails closed with `503 CURRENCY_VALIDATION_UNAVAILABLE`; a real deployment must replace it with the authenticated hardware adapter. Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
+Unknown references are rejected. Outside the `demo` profile the bundled validator fails closed with `503 CURRENCY_VALIDATION_UNAVAILABLE`; a real deployment must replace it with an authenticated hardware integration. Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
 
 ## Design notes
 

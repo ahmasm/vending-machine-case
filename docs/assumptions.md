@@ -13,8 +13,8 @@ This is the concise source of truth for product assumptions. Contradicting chang
 
 - Currency is `UNIT`; amounts are immutable `long` minor units, never `double` or `float`.
 - Supported denominations are `5`, `10`, `20`, and `50`; quantities are bounded integers.
-- A `CurrencyValidator` port resolves a trusted validator reference before mutation. Only an accepted result supplies the authoritative denomination to the aggregate.
-- The deterministic validator simulator is enabled only by the explicit `demo` profile. Non-demo runtime fails closed until an authenticated hardware adapter replaces it.
+- A `CurrencyValidator` boundary interface resolves a trusted validator reference before mutation. Only an accepted result supplies the authoritative denomination to the aggregate.
+- The deterministic validator simulator is enabled only by the explicit `demo` profile. Non-demo runtime fails closed until an authenticated hardware integration replaces it.
 - Accepted money stays in session escrow. Refund returns the same denomination composition.
 - `VendingMachine` is the consistency boundary for session, stock, escrow, and cash mutations.
 - Sessions are `ACTIVE`, `COMPLETED`, `REFUNDED`, or `EXPIRED`; terminal states reject mutation.

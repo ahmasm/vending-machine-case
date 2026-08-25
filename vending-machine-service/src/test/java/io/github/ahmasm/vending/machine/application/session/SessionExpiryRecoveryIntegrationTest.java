@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.ahmasm.vending.machine.application.port.out.SessionExpiryCandidateFinder;
-import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
+import io.github.ahmasm.vending.machine.domain.machine.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.SessionId;
