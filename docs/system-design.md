@@ -6,16 +6,17 @@ This reviewer-facing summary records the accepted case architecture. Product rul
 
 The original case requires DDD, domain events and event handling, a Spring Boot REST API with Swagger, persistence and consistency, monetary validation, error handling, recovery, and the supplied ten-product sample data. It does not require Kafka, an audit service, an outbox, or microservice decomposition.
 
-The solution therefore uses one deployable. Event-driven behavior is transaction-local and in-process; external messaging is added only when a real downstream consumer exists.
+The solution therefore uses one deployable. Its core is command-driven: REST commands invoke aggregate behavior, and successful state changes emit transaction-local domain-event notifications. External messaging is added only when a real downstream consumer exists.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     Client -->|REST + Idempotency-Key| Core[vending-machine-service]
+    Validator[Trusted currency validator] -->|validator reference| Core
     Core --> Domain[VendingMachine aggregate]
     Domain --> Events[Domain events]
-    Events --> Handlers[In-process application handlers]
+    Events --> Handlers[Optional in-process subscribers]
     Core --> CoreDB[(PostgreSQL)]
     Handlers --> CoreDB
 ```
@@ -51,17 +52,19 @@ Sessions transition only from `ACTIVE` to `COMPLETED`, `REFUNDED`, or `EXPIRED`.
 
 ## Event-driven behavior
 
-The aggregate records past-tense domain events without knowing Spring or persistence. Events are released by the application layer after a successful domain mutation and dispatched synchronously inside the use-case transaction.
+The aggregate records past-tense domain events without knowing Spring or persistence. Events describe completed state changes rather than perform the original transition. The application layer releases and dispatches them synchronously inside the use-case transaction.
 
-| Domain event | Current handling |
-|---|---|
-| `PurchaseCompleted` | An application handler persists the immutable purchase in the same PostgreSQL transaction. |
-| `PurchaseSessionStarted` | Identified domain fact; no fabricated downstream side effect is added. |
-| `MoneyAccepted` | Identified domain fact; current state is persisted through the aggregate repository. |
-| `RefundCompleted` | Identified domain fact; the idempotent command result contains the returned composition. |
-| `SessionExpired` | Identified domain fact; recovery persists the terminal aggregate state. |
+| Domain event | Runtime subscriber | Durable result |
+|---|---|---|
+| `PurchaseCompleted` | `PurchaseCompletedEventHandler` | Aggregate state, immutable purchase, and processed command |
+| `PurchaseSessionStarted` | None | Session state and processed command |
+| `MoneyAccepted` | None | Escrow state and processed command |
+| `RefundCompleted` | None | Refunded session and processed command |
+| `SessionExpired` | None | Expired session state |
 
-Only `PurchaseCompleted` needs a separate handler in the current requirements. Adding no-op consumers merely to increase event count is avoided. If an actual external consumer appears, the design must add a transactional outbox and explicit at-least-once/idempotency semantics through an ADR.
+Only `PurchaseCompleted` has a current secondary consequence: persisting a separate immutable purchase. Other events intentionally have no subscriber; their directly persisted aggregate or command outcome is not presented as event handling. Adding no-op consumers merely to increase event count is avoided.
+
+These application events are neither durable nor replayable. A crash before commit rolls back the transaction; after commit, current local consequences are durable, but the event cannot be redelivered independently. A real external consumer or delivery requirement must introduce a transactional outbox and explicit at-least-once/idempotency semantics through an ADR.
 
 ## Purchase transaction
 
@@ -84,7 +87,7 @@ One successful local transaction:
 7. stores the stable processed-command result;
 8. commits before returning product and change.
 
-Currency validation happens through a side-effect-free port before this transaction. Rejection or outage does not mutate domain or processed-command state.
+Currency validation happens through a side-effect-free port before this transaction. The client submits a validator reference rather than an authoritative denomination or `isAuthentic` flag. An accepted validator result supplies the denomination; rejection or outage does not mutate domain or processed-command state.
 
 ## Reliability layers
 
@@ -97,11 +100,13 @@ Currency validation happens through a side-effect-free port before this transact
 | Event handling | Synchronous in-process dispatcher inside the originating transaction |
 | Restart recovery | Persisted session activity + bounded scheduler scan + domain revalidation |
 
-Synchronous handling is deliberate: all current consequences belong to the same local consistency boundary. There is no claim of durable asynchronous delivery because the case defines no external consumer.
+Synchronous handling is deliberate: all current consequences belong to the same local consistency boundary. The design claims local transaction atomicity, not durable asynchronous event delivery.
 
 ## Interfaces and storage
 
-REST v1 exposes product availability, session start/query, money insertion, selection, refund, and purchase lookup. State changes require `Idempotency-Key`; failures use `application/problem+json` with stable codes and correlation IDs.
+REST v1 exposes product availability, session start/query, validated money insertion, selection, refund, and purchase lookup. State changes require `Idempotency-Key`; failures use `application/problem+json` with stable codes and correlation IDs.
+
+The case delivery includes a deterministic simulator under the explicit `demo` profile so accepted, counterfeit, unreadable, unsupported, and unavailable outcomes are repeatable. Outside that profile the validator fails closed; a real deployment replaces the outbound adapter with an authenticated hardware integration. Simulator references are test fixtures, not proof of production authenticity.
 
 Core persistence contains machine, slot product snapshots, cash inventory, session tender, immutable purchases, and processed-command results. JPA entities remain in adapters; Flyway owns the schema; PostgreSQL Testcontainers validates migrations and constraints.
 
@@ -114,9 +119,11 @@ The provided ten products are provisioned repeatably for the local case demonstr
 | One authoritative service | Stock, escrow, cash, and purchase need one consistency boundary. |
 | PostgreSQL + Flyway | Transactions, constraints, locking, and partial indexes fit the model. |
 | Integer money and escrow | Monetary precision and exact-composition refund. |
+| Validator-owned denomination | Neither authenticity nor accepted value is trusted from the HTTP client. |
+| Fail-closed default | Missing hardware integration cannot silently accept currency. |
 | Optimistic locking | Same-machine contention should be low; different machines remain parallel. |
-| In-process domain events | Meets the stated event-handling need without inventing a distributed consumer. |
-| No Kafka/outbox | No external consumer or asynchronous delivery requirement exists in the case. |
+| In-process domain events | Exposes completed domain facts and decouples the current purchase consequence while preserving local atomicity. |
+| No Kafka/outbox | No external consumer or durable delivery requirement exists; current events are intentionally ephemeral. |
 | No Saga | Core work commits in one database. |
 
 ## Repository

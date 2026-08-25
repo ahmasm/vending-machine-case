@@ -4,9 +4,9 @@ ASELSAN interview case implementation built with Java 25, Spring Boot 3.5.16, Ma
 
 ## Case coverage
 
-The service supports session start, money insertion, product selection, change, refund, product/session/purchase queries, inactivity recovery, and the ten products supplied by the case. Money is stored as `long` minor units; accepted denominations use bounded integer quantities.
+The service supports session start, validated money insertion, product selection, change, refund, product/session/purchase queries, inactivity recovery, and the ten products supplied by the case. Money is stored as `long` minor units; accepted denominations use bounded integer quantities.
 
-Domain events describe completed business facts. `PurchaseCompleted` is handled synchronously in-process to persist the immutable purchase in the same PostgreSQL transaction as stock, cash, session, and idempotency state. The case defines no external event consumer, so Kafka, an outbox, an audit service, and microservice decomposition are intentionally outside the current scope.
+The service has a command-driven core with synchronous, transaction-local domain-event notifications. `PurchaseCompleted` has the only current subscriber and persists the immutable purchase in the same PostgreSQL transaction as stock, cash, session, and idempotency state. These events are not durable or replayable messages; the case defines no external consumer, so Kafka, an outbox, an audit service, and microservice decomposition are intentionally outside the current scope.
 
 ## REST API
 
@@ -19,6 +19,12 @@ Domain events describe completed business facts. `PurchaseCompleted` is handled 
 - `GET /api/v1/machines/{machineId}/purchases/{transactionId}`
 
 Every command requires an `Idempotency-Key` header. Responses carry `X-Correlation-Id`; errors use `application/problem+json`. OpenAPI JSON is at `/v3/api-docs` and Swagger UI at `/swagger-ui.html`.
+
+The money endpoint accepts a trusted validator reference, not a client assertion such as `isAuthentic` or an authoritative denomination. The validator result supplies the denomination that enters escrow:
+
+```json
+{"validatorReference": "SIM-VALID-10"}
+```
 
 ## Build
 
@@ -56,7 +62,17 @@ Docker Compose enables the isolated `db/demo` Flyway location. It creates `VM-00
 | B4 | Protein Bar | 45 |
 | B5 | Gum | 20 |
 
-Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
+Docker Compose also enables the explicit `demo` profile. Its deterministic currency-validator references are:
+
+| Reference | Result |
+|---|---|
+| `SIM-VALID-5`, `SIM-VALID-10`, `SIM-VALID-20`, `SIM-VALID-50` | Accepted with the corresponding authoritative denomination |
+| `SIM-COUNTERFEIT` | Rejected as counterfeit |
+| `SIM-UNREADABLE` | Rejected as unreadable |
+| `SIM-UNSUPPORTED` | Rejected as unsupported denomination |
+| `SIM-OFFLINE` | Validator unavailable |
+
+Unknown references are rejected. Outside the `demo` profile the bundled adapter fails closed with `503 CURRENCY_VALIDATION_UNAVAILABLE`; a real deployment must replace it with the authenticated hardware adapter. Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
 
 ## Design notes
 
