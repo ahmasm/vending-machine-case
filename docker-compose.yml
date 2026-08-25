@@ -26,6 +26,7 @@ services:
       VENDING_MACHINE_DB_URL: jdbc:postgresql://vending-db:5432/vending
       VENDING_MACHINE_DB_USERNAME: ${VENDING_MACHINE_DB_USERNAME:?Copy .env.example to .env}
       VENDING_MACHINE_DB_PASSWORD: ${VENDING_MACHINE_DB_PASSWORD:?Copy .env.example to .env}
+      SPRING_PROFILES_ACTIVE: demo
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/demo
     ports:
       - "${VENDING_MACHINE_PORT:-8080}:8080"

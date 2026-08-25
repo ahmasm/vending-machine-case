@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
 import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
 import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.port.out.CurrencyRejectionReason;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidation;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
@@ -35,15 +36,16 @@ class InsertMoneyServiceTest {
     private static final Instant STARTED_AT = Instant.parse("2026-08-23T10:00:00Z");
     private static final Instant ACCEPTED_AT = STARTED_AT.plusSeconds(10);
     private static final InsertMoneyCommand COMMAND =
-            new InsertMoneyCommand(MACHINE_ID, SESSION_ID, TEN, IDEMPOTENCY_KEY);
+            new InsertMoneyCommand(MACHINE_ID, SESSION_ID, "SIM-VALID-10", IDEMPOTENCY_KEY);
 
     @Test
     void acceptedCurrencyExecutesValidatedMutationAndReturnsBalance() {
         var expected = new InsertMoneyResult(Money.of(10, UNIT));
         var executor = mock(TransactionalValidatedMoneyExecutor.class);
-        when(executor.execute(eq(COMMAND), anyString(), eq(ACCEPTED_AT))).thenReturn(expected);
+        when(executor.execute(eq(COMMAND), eq(TEN), anyString(), eq(ACCEPTED_AT)))
+                .thenReturn(expected);
         var service = new InsertMoneyService(
-                (machineId, denomination) -> CurrencyValidation.ACCEPTED,
+                (machineId, validatorReference) -> new CurrencyValidation.Accepted(TEN),
                 emptyProcessedCommandStore(),
                 executor,
                 fixedClock());
@@ -51,28 +53,29 @@ class InsertMoneyServiceTest {
         var result = service.handle(COMMAND);
 
         assertEquals(expected, result);
-        verify(executor).execute(eq(COMMAND), anyString(), eq(ACCEPTED_AT));
+        verify(executor).execute(eq(COMMAND), eq(TEN), anyString(), eq(ACCEPTED_AT));
     }
 
     @Test
     void rejectedCurrencyDoesNotEnterValidatedMutation() {
         var executor = mock(TransactionalValidatedMoneyExecutor.class);
         var service = new InsertMoneyService(
-                (machineId, denomination) -> CurrencyValidation.REJECTED,
+                (machineId, validatorReference) ->
+                        new CurrencyValidation.Rejected(CurrencyRejectionReason.COUNTERFEIT),
                 emptyProcessedCommandStore(),
                 executor,
                 fixedClock());
 
         assertThrows(CurrencyRejectedException.class, () -> service.handle(COMMAND));
 
-        verify(executor, never()).execute(any(), anyString(), any());
+        verify(executor, never()).execute(any(), any(), anyString(), any());
     }
 
     @Test
     void unavailableValidatorDoesNotEnterValidatedMutation() {
         var executor = mock(TransactionalValidatedMoneyExecutor.class);
         var service = new InsertMoneyService(
-                (machineId, denomination) -> CurrencyValidation.UNAVAILABLE,
+                (machineId, validatorReference) -> new CurrencyValidation.Unavailable(),
                 emptyProcessedCommandStore(),
                 executor,
                 fixedClock());
@@ -81,7 +84,7 @@ class InsertMoneyServiceTest {
                 CurrencyValidationUnavailableException.class,
                 () -> service.handle(COMMAND));
 
-        verify(executor, never()).execute(any(), anyString(), any());
+        verify(executor, never()).execute(any(), any(), anyString(), any());
     }
 
     private static ProcessedCommandStore emptyProcessedCommandStore() {

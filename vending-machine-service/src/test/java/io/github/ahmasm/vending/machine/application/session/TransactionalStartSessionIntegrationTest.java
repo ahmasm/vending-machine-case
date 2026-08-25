@@ -212,8 +212,8 @@ class TransactionalStartSessionIntegrationTest {
                 .andExpect(jsonPath("$.info.title").value("Vending Machine API"))
                 .andExpect(jsonPath("$.info.version").value("v1"))
                 .andExpect(jsonPath("$.components.schemas.InsertMoneyRequest.required[0]")
-                        .value("denomination"))
-                .andExpect(jsonPath("$.components.schemas.InsertMoneyRequest.properties.currency")
+                        .value("validatorReference"))
+                .andExpect(jsonPath("$.components.schemas.InsertMoneyRequest.properties.denomination")
                         .doesNotExist())
                 .andExpect(jsonPath(
                                 "$.paths['/api/v1/machines/{machineId}/products']"

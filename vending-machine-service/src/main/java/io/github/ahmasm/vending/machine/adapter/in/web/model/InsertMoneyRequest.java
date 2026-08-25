@@ -1,9 +1,14 @@
 package io.github.ahmasm.vending.machine.adapter.in.web.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Schema(name = "InsertMoneyRequest")
 public record InsertMoneyRequest(
-        @NotNull @Positive @Schema(example = "10") Long denomination) {}
+        @NotBlank
+                @Size(max = 128)
+                @Schema(
+                        description = "Reference produced by the trusted currency validator",
+                        example = "SIM-VALID-10")
+                String validatorReference) {}

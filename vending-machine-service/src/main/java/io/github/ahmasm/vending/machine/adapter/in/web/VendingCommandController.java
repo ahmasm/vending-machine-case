@@ -27,9 +27,7 @@ import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.SessionId;
 import io.github.ahmasm.vending.machine.domain.machine.SlotCode;
-import io.github.ahmasm.vending.machine.domain.money.Currency;
 import io.github.ahmasm.vending.machine.domain.money.Denomination;
-import io.github.ahmasm.vending.machine.domain.money.Money;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -127,7 +125,7 @@ public class VendingCommandController {
             path = "/sessions/{sessionId}/money",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Insert a supported denomination into an active session")
+    @Operation(summary = "Insert currency validated by the trusted device boundary")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -135,7 +133,7 @@ public class VendingCommandController {
                 content = @Content(schema = @Schema(implementation = InsertMoneyResponse.class))),
         @ApiResponse(
                 responseCode = "400",
-                description = "Invalid denomination or request",
+                description = "Invalid request",
                 content = @Content(schema = @Schema(implementation = ApiProblem.class))),
         @ApiResponse(
                 responseCode = "404",
@@ -163,11 +161,10 @@ public class VendingCommandController {
                     @Size(max = 128)
                     String idempotencyKey,
             @Valid @RequestBody InsertMoneyRequest body) {
-        var denomination = Denomination.from(Money.of(body.denomination(), Currency.UNIT));
         var result = insertMoneyService.handle(new InsertMoneyCommand(
                 new MachineId(machineId),
                 new SessionId(sessionId.toString()),
-                denomination,
+                body.validatorReference(),
                 new IdempotencyKey(idempotencyKey)));
         return ResponseEntity.ok(toResponse(result));
     }
@@ -205,7 +202,7 @@ public class VendingCommandController {
                                           "status": 409,
                                           "code": "INSUFFICIENT_BALANCE",
                                           "detail": "Current balance is not sufficient for the selected product",
-                                          "instance": "/api/v1/machines/VM-001/sessions/SES-001/selection",
+                                          "instance": "/api/v1/machines/VM-001/sessions/550e8400-e29b-41d4-a716-446655440000/selection",
                                           "correlationId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
                                           "balance": 20,
                                           "productPrice": 35
@@ -269,7 +266,7 @@ public class VendingCommandController {
                                           "status": 409,
                                           "code": "ACTIVE_SESSION_NOT_FOUND",
                                           "detail": "The requested active session does not exist",
-                                          "instance": "/api/v1/machines/VM-001/sessions/SES-001/refund",
+                                          "instance": "/api/v1/machines/VM-001/sessions/550e8400-e29b-41d4-a716-446655440000/refund",
                                           "correlationId": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                                         }
                                         """))),

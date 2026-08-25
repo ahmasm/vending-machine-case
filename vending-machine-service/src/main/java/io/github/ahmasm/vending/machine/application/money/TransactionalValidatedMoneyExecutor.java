@@ -5,6 +5,7 @@ import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
 import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;
 import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
+import io.github.ahmasm.vending.machine.domain.money.Denomination;
 import java.time.Instant;
 import java.util.Objects;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,8 +33,12 @@ public class TransactionalValidatedMoneyExecutor {
 
     @Transactional
     public InsertMoneyResult execute(
-            InsertMoneyCommand command, String requestHash, Instant acceptedAt) {
+            InsertMoneyCommand command,
+            Denomination validatedDenomination,
+            String requestHash,
+            Instant acceptedAt) {
         Objects.requireNonNull(command, "command must not be null");
+        Objects.requireNonNull(validatedDenomination, "validatedDenomination must not be null");
         Objects.requireNonNull(requestHash, "requestHash must not be null");
         Objects.requireNonNull(acceptedAt, "acceptedAt must not be null");
         var claimed = processedCommandStore.claim(
@@ -50,7 +55,7 @@ public class TransactionalValidatedMoneyExecutor {
                 .findForMutation(command.machineId())
                 .orElseThrow(() -> new MachineNotFoundException(command.machineId()));
         var balance = machine.acceptMoney(
-                command.sessionId(), command.denomination(), acceptedAt);
+                command.sessionId(), validatedDenomination, acceptedAt);
         var result = new InsertMoneyResult(balance);
         machineRepository.save(machine);
         machine.releaseEvents().forEach(eventPublisher::publishEvent);

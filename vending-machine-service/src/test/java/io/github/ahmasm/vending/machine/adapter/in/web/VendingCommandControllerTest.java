@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
 import io.github.ahmasm.vending.machine.application.command.MachineNotFoundException;
+import io.github.ahmasm.vending.machine.application.money.CurrencyRejectedException;
 import io.github.ahmasm.vending.machine.application.money.CurrencyValidationUnavailableException;
 import io.github.ahmasm.vending.machine.application.money.InsertMoneyService;
 import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
@@ -31,6 +32,7 @@ import io.github.ahmasm.vending.machine.application.port.in.SelectProductCommand
 import io.github.ahmasm.vending.machine.application.port.in.SelectProductResult;
 import io.github.ahmasm.vending.machine.application.port.in.StartSessionCommand;
 import io.github.ahmasm.vending.machine.application.port.in.StartSessionResult;
+import io.github.ahmasm.vending.machine.application.port.out.CurrencyRejectionReason;
 import io.github.ahmasm.vending.machine.application.purchase.SelectProductService;
 import io.github.ahmasm.vending.machine.application.refund.RefundService;
 import io.github.ahmasm.vending.machine.application.session.StartSessionService;
@@ -135,7 +137,7 @@ class VendingCommandControllerTest {
     }
 
     @Test
-    void insertMoneyMapsServerOwnedUnitAndReturnsCurrentBalance() throws Exception {
+    void insertMoneyMapsValidatorReferenceAndReturnsCurrentBalance() throws Exception {
         when(insertMoneyUseCase.handle(any()))
                 .thenReturn(new InsertMoneyResult(Money.of(10, UNIT)));
 
@@ -146,7 +148,7 @@ class VendingCommandControllerTest {
                         .header("Idempotency-Key", "KEY-MONEY")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"denomination": 10}
+                                {"validatorReference": "SIM-VALID-10"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -158,7 +160,7 @@ class VendingCommandControllerTest {
         var command = commandCaptor.getValue();
         assertEquals(MACHINE_ID, command.machineId());
         assertEquals(new SessionId(SESSION_UUID.toString()), command.sessionId());
-        assertEquals(TEN, command.denomination());
+        assertEquals("SIM-VALID-10", command.validatorReference());
         assertEquals("KEY-MONEY", command.idempotencyKey().value());
     }
 
@@ -407,7 +409,7 @@ class VendingCommandControllerTest {
     @Test
     void currencyValidatorOutageReturnsServiceUnavailableProblem() throws Exception {
         when(insertMoneyUseCase.handle(any()))
-                .thenThrow(new CurrencyValidationUnavailableException(MACHINE_ID, TEN));
+                .thenThrow(new CurrencyValidationUnavailableException(MACHINE_ID));
 
         mockMvc.perform(post(
                                 "/api/v1/machines/{machineId}/sessions/{sessionId}/money",
@@ -416,11 +418,32 @@ class VendingCommandControllerTest {
                         .header("Idempotency-Key", "KEY-UNAVAILABLE")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"denomination": 10}
+                                {"validatorReference": "SIM-OFFLINE"}
                                 """))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.code").value("CURRENCY_VALIDATION_UNAVAILABLE"));
+    }
+
+    @Test
+    void rejectedCurrencyReturnsConflictProblemWithReason() throws Exception {
+        when(insertMoneyUseCase.handle(any()))
+                .thenThrow(new CurrencyRejectedException(
+                        MACHINE_ID, CurrencyRejectionReason.COUNTERFEIT));
+
+        mockMvc.perform(post(
+                                "/api/v1/machines/{machineId}/sessions/{sessionId}/money",
+                                MACHINE_ID.value(),
+                                SESSION_UUID)
+                        .header("Idempotency-Key", "KEY-COUNTERFEIT")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"validatorReference": "SIM-COUNTERFEIT"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("CURRENCY_REJECTED"))
+                .andExpect(jsonPath("$.reason").value("COUNTERFEIT"));
     }
 
     @Test
@@ -464,8 +487,8 @@ class VendingCommandControllerTest {
     private static Stream<String> invalidMoneyBodies() {
         return Stream.of(
                 "{}",
-                "{\"denomination\": 0}",
-                "{\"denomination\": 7}");
+                "{\"validatorReference\": \"\"}",
+                "{\"validatorReference\": \"   \"}");
     }
 
     private static Stream<Arguments> startSessionFailures() {

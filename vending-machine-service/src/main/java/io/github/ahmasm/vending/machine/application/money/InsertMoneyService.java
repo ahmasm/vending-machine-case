@@ -45,16 +45,16 @@ public final class InsertMoneyService {
         }
 
         var validation = Objects.requireNonNull(
-                currencyValidator.validate(command.machineId(), command.denomination()),
+                currencyValidator.validate(command.machineId(), command.validatorReference()),
                 "currency validation must not be null");
 
         return switch (validation) {
-            case ACCEPTED ->
-                validatedMoneyExecutor.execute(command, requestHash, clock.instant());
-            case REJECTED -> throw new CurrencyRejectedException(
-                    command.machineId(), command.denomination());
-            case UNAVAILABLE -> throw new CurrencyValidationUnavailableException(
-                    command.machineId(), command.denomination());
+            case CurrencyValidation.Accepted accepted -> validatedMoneyExecutor.execute(
+                    command, accepted.denomination(), requestHash, clock.instant());
+            case CurrencyValidation.Rejected rejected ->
+                throw new CurrencyRejectedException(command.machineId(), rejected.reason());
+            case CurrencyValidation.Unavailable ignored ->
+                throw new CurrencyValidationUnavailableException(command.machineId());
         };
     }
 
@@ -78,7 +78,6 @@ public final class InsertMoneyService {
                 COMMAND_TYPE,
                 command.machineId().value(),
                 command.sessionId().value(),
-                Long.toString(command.denomination().value().amount()),
-                command.denomination().value().currency().name());
+                command.validatorReference());
     }
 }

@@ -9,9 +9,9 @@ import java.util.Objects;
 
 @Schema(name = "SelectProductResponse")
 public record SelectProductResponse(
-        @Schema(example = "TRX-001") String transactionId,
+        @Schema(example = "6ba7b810-9dad-11d1-80b4-00c04fd430c8") String transactionId,
         @Schema(example = "VM-001") String machineId,
-        @Schema(example = "SES-001") String sessionId,
+        @Schema(example = "550e8400-e29b-41d4-a716-446655440000") String sessionId,
         @Schema(example = "A2") String slotCode,
         ProductResponse product,
         @Schema(example = "35") long price,

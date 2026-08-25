@@ -164,7 +164,8 @@ public final class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 "Currency rejected",
                 "CURRENCY_REJECTED",
                 "The inserted money was rejected",
-                request);
+                request,
+                Map.of("reason", exception.reason().name()));
     }
 
     @ExceptionHandler(CurrencyValidationUnavailableException.class)
