@@ -11,6 +11,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  task:
+    scheduling:
+      pool:
+        size: 2
   lifecycle:
     timeout-per-shutdown-phase: 20s
 
@@ -34,3 +38,11 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+vending:
+  session-expiry:
+    enabled: ${VENDING_SESSION_EXPIRY_ENABLED:true}
+    inactivity-timeout: ${VENDING_SESSION_EXPIRY_INACTIVITY_TIMEOUT:2m}
+    scan-interval: ${VENDING_SESSION_EXPIRY_SCAN_INTERVAL:10s}
+    initial-delay: ${VENDING_SESSION_EXPIRY_INITIAL_DELAY:10s}
+    batch-size: ${VENDING_SESSION_EXPIRY_BATCH_SIZE:100}
