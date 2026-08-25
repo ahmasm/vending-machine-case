@@ -6,9 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidation;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidator;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;

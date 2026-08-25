@@ -9,8 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.RefundCommand;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
 import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import io.github.ahmasm.vending.machine.domain.machine.ActiveSessionNotFoundException;

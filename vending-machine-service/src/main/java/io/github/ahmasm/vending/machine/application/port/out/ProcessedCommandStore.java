@@ -1,7 +1,7 @@
 package io.github.ahmasm.vending.machine.application.port.out;
 
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.ProcessedCommandResult;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.ProcessedCommandResult;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import java.time.Instant;
 import java.util.Optional;

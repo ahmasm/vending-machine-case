@@ -1,4 +1,4 @@
-package io.github.ahmasm.vending.machine.application.port.in;
+package io.github.ahmasm.vending.machine.application.command;
 
 import java.util.Objects;
 

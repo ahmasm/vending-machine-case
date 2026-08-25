@@ -26,6 +26,10 @@ flowchart LR
 | `vending-machine-service` | Authoritative machines, product availability, sessions, stock, cash, purchases, command results, REST API, recovery, and domain-event handling |
 
 The domain is framework-independent. Spring, HTTP, JPA and JSON models remain outside it.
+The application layer is organized by use case: commands live beside the service that
+handles them, while shared idempotency and replay result types live in `application.command`.
+Only genuine outbound technology boundaries use the `application.port.out` package; no
+mirror-image inbound-port package is maintained for plain data records.
 
 ## Domain boundary
 

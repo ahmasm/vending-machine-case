@@ -2,8 +2,7 @@ package io.github.ahmasm.vending.machine.application.money;
 
 import io.github.ahmasm.vending.machine.application.command.CanonicalCommandFingerprint;
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidation;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidator;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;

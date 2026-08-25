@@ -1,8 +1,7 @@
 package io.github.ahmasm.vending.machine.application.money;
 
 import io.github.ahmasm.vending.machine.application.command.MachineNotFoundException;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;
 import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.money.Denomination;

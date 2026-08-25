@@ -1,6 +1,6 @@
 package io.github.ahmasm.vending.machine.application.port.out;
 
-import io.github.ahmasm.vending.machine.application.port.in.ProcessedCommandResult;
+import io.github.ahmasm.vending.machine.application.command.ProcessedCommandResult;
 import java.util.Objects;
 import java.util.Optional;
 

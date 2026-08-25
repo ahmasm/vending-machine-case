@@ -12,9 +12,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyRejectionReason;
 import io.github.ahmasm.vending.machine.application.port.out.CurrencyValidation;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;

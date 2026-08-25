@@ -2,12 +2,12 @@ package io.github.ahmasm.vending.machine.adapter.out.persistence.command;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyResult;
-import io.github.ahmasm.vending.machine.application.port.in.ProcessedCommandResult;
-import io.github.ahmasm.vending.machine.application.port.in.RefundResult;
-import io.github.ahmasm.vending.machine.application.port.in.SelectProductResult;
-import io.github.ahmasm.vending.machine.application.port.in.StartSessionResult;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
+import io.github.ahmasm.vending.machine.application.command.ProcessedCommandResult;
+import io.github.ahmasm.vending.machine.application.command.RefundResult;
+import io.github.ahmasm.vending.machine.application.command.SelectProductResult;
+import io.github.ahmasm.vending.machine.application.command.StartSessionResult;
 import io.github.ahmasm.vending.machine.application.port.out.ProcessedCommandStore;
 import io.github.ahmasm.vending.machine.application.port.out.StoredProcessedCommand;
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;

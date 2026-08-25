@@ -8,9 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.StartSessionCommand;
-import io.github.ahmasm.vending.machine.application.port.in.StartSessionResult;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.StartSessionResult;
 import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.machine.ActiveSessionAlreadyExistsException;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;

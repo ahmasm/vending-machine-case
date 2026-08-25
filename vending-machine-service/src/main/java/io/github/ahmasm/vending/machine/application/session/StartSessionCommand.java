@@ -1,5 +1,6 @@
-package io.github.ahmasm.vending.machine.application.port.in;
+package io.github.ahmasm.vending.machine.application.session;
 
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import java.util.Objects;
 

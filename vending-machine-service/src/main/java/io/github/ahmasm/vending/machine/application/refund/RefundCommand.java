@@ -1,20 +1,18 @@
-package io.github.ahmasm.vending.machine.application.port.in;
+package io.github.ahmasm.vending.machine.application.refund;
 
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
 import io.github.ahmasm.vending.machine.domain.machine.MachineId;
 import io.github.ahmasm.vending.machine.domain.machine.SessionId;
-import io.github.ahmasm.vending.machine.domain.machine.SlotCode;
 import java.util.Objects;
 
-public record SelectProductCommand(
+public record RefundCommand(
         MachineId machineId,
         SessionId sessionId,
-        SlotCode slotCode,
         IdempotencyKey idempotencyKey) {
 
-    public SelectProductCommand {
+    public RefundCommand {
         Objects.requireNonNull(machineId, "machineId must not be null");
         Objects.requireNonNull(sessionId, "sessionId must not be null");
-        Objects.requireNonNull(slotCode, "slotCode must not be null");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey must not be null");
     }
 }

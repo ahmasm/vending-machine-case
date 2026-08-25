@@ -1,4 +1,4 @@
-package io.github.ahmasm.vending.machine.application.port.in;
+package io.github.ahmasm.vending.machine.application.command;
 
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import java.util.Objects;

@@ -13,11 +13,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
+import io.github.ahmasm.vending.machine.application.command.IdempotencyKey;
+import io.github.ahmasm.vending.machine.application.command.SelectProductResult;
+import io.github.ahmasm.vending.machine.application.money.InsertMoneyCommand;
 import io.github.ahmasm.vending.machine.application.money.InsertMoneyService;
-import io.github.ahmasm.vending.machine.application.port.in.IdempotencyKey;
-import io.github.ahmasm.vending.machine.application.port.in.InsertMoneyCommand;
-import io.github.ahmasm.vending.machine.application.port.in.SelectProductCommand;
-import io.github.ahmasm.vending.machine.application.port.in.SelectProductResult;
 import io.github.ahmasm.vending.machine.application.port.out.VendingMachineRepository;
 import io.github.ahmasm.vending.machine.domain.cash.CashComposition;
 import io.github.ahmasm.vending.machine.domain.machine.InsufficientBalanceException;
