@@ -1,6 +1,6 @@
 # Vending Machine Case
 
-ASELSAN interview case implementation built with Java 25, Spring Boot 3.5.16, Maven, and PostgreSQL. The code applies pragmatic layered DDD around one authoritative `VendingMachine` aggregate and one deployable service.
+Technical interview case implementation built with Java 25, Spring Boot 3.5.16, Maven, and PostgreSQL. The code applies pragmatic layered DDD around one authoritative `VendingMachine` aggregate and one deployable service.
 
 ## Case coverage
 
@@ -78,4 +78,4 @@ Each full accepted reference represents one physical insertion and is single-use
 
 The implementation keeps the domain free of Spring, JPA, HTTP, and JSON annotations. PostgreSQL transactions, command idempotency, `@Version`, and `OPTIMISTIC_FORCE_INCREMENT` protect the aggregate when child rows change. The inactivity scheduler revalidates each candidate inside the mutation transaction before expiring and refunding a session.
 
-Accepted assumptions and design decisions are documented in [`docs/assumptions.md`](docs/assumptions.md) and [`docs/system-design.md`](docs/system-design.md).
+Accepted assumptions and design decisions are documented in [`docs/assumptions.md`](docs/assumptions.md) and [`docs/system-design.md`](docs/system-design.md). The concise Turkish presentation source is available at [`docs/presentation/vending-machine-case-presentation.md`](docs/presentation/vending-machine-case-presentation.md).
