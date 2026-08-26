@@ -6,6 +6,7 @@ This is the concise source of truth for product assumptions. Contradicting chang
 
 - The system manages multiple machines; each machine has at most one active customer session.
 - `vending-machine-service` is the single deployable and owns sessions, slots, stock, cash, purchases, command results, and product availability in PostgreSQL.
+- A `SlotCode` represents a keypad/UI selection such as `A1`. A successful purchase treats delivery as logically complete and decrements slot stock; it does not claim motor actuation or drop-sensor confirmation.
 - Domain events are dispatched synchronously in-process; only events with a current secondary consequence have subscribers. No external broker or invented downstream bounded context is part of the case delivery.
 - Vendor-specific validator/dispenser protocols and dispense-failure recovery are outside the first delivery; the trusted validator boundary and fail-closed behavior are implemented.
 

@@ -41,6 +41,8 @@ VendingMachine
 
 `VendingMachine` owns every mutation that must remain consistent. A slot contains the sellable product snapshot required by the current case; a separate product lifecycle is not implemented without product-management behavior.
 
+`SlotCode` represents the selection entered through a keypad or UI, such as `A1`. In the current software boundary, `Slot.dispenseOne()` is the logical delivery transition performed after all purchase invariants pass: it decrements stock but does not invoke a motor or confirm delivery through a drop sensor. A real dispenser integration would require an explicit `DISPENSING`/`DISPENSED`/`DISPENSE_FAILED` lifecycle, hardware idempotency, and recovery for uncertain outcomes; those protocols are outside this case delivery.
+
 Key invariants:
 
 - one active session per machine;
