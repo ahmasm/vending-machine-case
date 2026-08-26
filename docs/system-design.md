@@ -92,7 +92,7 @@ One successful local transaction:
 7. stores the stable processed-command result;
 8. commits before returning product and change.
 
-Currency validation happens through a side-effect-free boundary interface before this transaction. The client submits a validator reference rather than an authoritative denomination or `isAuthentic` flag. An accepted validator result supplies the denomination; rejection or outage does not mutate domain or processed-command state.
+Currency validation happens through a side-effect-free boundary interface before this transaction. The client submits a validator reference rather than an authoritative denomination or `isAuthentic` flag. An accepted validator result supplies the denomination. The reference hash is claimed once per machine inside the money transaction, preventing the same physical acceptance from being credited again under another idempotency key. Rejection, outage, or a rolled-back mutation does not consume the reference.
 
 ## Reliability layers
 
@@ -102,10 +102,13 @@ Currency validation happens through a side-effect-free boundary interface before
 | Atomicity | PostgreSQL transaction and constraints |
 | Concurrency | Root `@Version` + `OPTIMISTIC_FORCE_INCREMENT` for every mutation load |
 | HTTP retry | Transactionally claimed processed-command result |
+| Currency replay | Transactionally claimed validator-reference hash |
 | Event handling | Synchronous in-process dispatcher inside the originating transaction |
 | Restart recovery | Persisted session activity + bounded scheduler scan + domain revalidation |
 
 Synchronous handling is deliberate: all current consequences belong to the same local consistency boundary. The design claims local transaction atomicity, not durable asynchronous event delivery.
+
+Processed-command rows and consumed validator-reference hashes have no automatic TTL in the current delivery. A production cleanup policy may be added only after retry and anti-replay windows are explicitly defined; deleting older rows makes their keys or references reusable and therefore narrows the guarantees.
 
 ## Interfaces and storage
 
@@ -113,7 +116,7 @@ REST v1 exposes product availability, session start/query, validated money inser
 
 The case delivery includes a deterministic simulator under the explicit `demo` profile so accepted, counterfeit, unreadable, unsupported, and unavailable outcomes are repeatable. Outside that profile the validator fails closed; a real deployment replaces the simulator with an authenticated hardware integration. Simulator references are test fixtures, not proof of production authenticity.
 
-Core persistence contains machine, slot product snapshots, cash inventory, session tender, immutable purchases, and processed-command results. JPA entities remain in the persistence layer; Flyway owns the schema; PostgreSQL Testcontainers validates migrations and constraints.
+Core persistence contains machine, slot product snapshots, cash inventory, session tender, immutable purchases, processed-command results, and consumed validator-reference hashes. JPA entities remain in the persistence layer; Flyway owns the schema; PostgreSQL Testcontainers validates migrations and constraints.
 
 The provided ten products are provisioned repeatably for the local case demonstration with positive stock and deterministic initial cash inventory.
 

@@ -16,16 +16,20 @@ public class TransactionalValidatedMoneyExecutor {
 
     private final VendingMachineRepository machineRepository;
     private final ProcessedCommandStore processedCommandStore;
+    private final CurrencyAcceptanceStore currencyAcceptanceStore;
     private final ApplicationEventPublisher eventPublisher;
 
     public TransactionalValidatedMoneyExecutor(
             VendingMachineRepository machineRepository,
             ProcessedCommandStore processedCommandStore,
+            CurrencyAcceptanceStore currencyAcceptanceStore,
             ApplicationEventPublisher eventPublisher) {
         this.machineRepository = Objects.requireNonNull(
                 machineRepository, "machineRepository must not be null");
         this.processedCommandStore = Objects.requireNonNull(
                 processedCommandStore, "processedCommandStore must not be null");
+        this.currencyAcceptanceStore = Objects.requireNonNull(
+                currencyAcceptanceStore, "currencyAcceptanceStore must not be null");
         this.eventPublisher =
                 Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
     }
@@ -48,6 +52,10 @@ public class TransactionalValidatedMoneyExecutor {
                     .map(stored -> InsertMoneyService.replay(command, requestHash, stored))
                     .orElseThrow(() -> new IllegalStateException(
                             "Concurrent processed command could not be replayed"));
+        }
+        if (!currencyAcceptanceStore.claim(
+                command.machineId(), command.validatorReference(), acceptedAt)) {
+            throw new CurrencyAcceptanceAlreadyConsumedException(command.machineId());
         }
 
         var machine = machineRepository

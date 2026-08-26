@@ -10,5 +10,5 @@ public record InsertMoneyRequest(
                 @Size(max = 128)
                 @Schema(
                         description = "Reference produced by the trusted currency validator",
-                        example = "SIM-VALID-10")
+                        example = "SIM-VALID-10-DEMO-001")
                 String validatorReference) {}

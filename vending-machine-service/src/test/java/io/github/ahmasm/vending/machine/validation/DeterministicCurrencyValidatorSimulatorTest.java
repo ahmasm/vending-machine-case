@@ -21,6 +21,7 @@ class DeterministicCurrencyValidatorSimulatorTest {
     @CsvSource({
         "SIM-VALID-5, FIVE",
         "SIM-VALID-10, TEN",
+        "SIM-VALID-10-DEMO-002, TEN",
         "SIM-VALID-20, TWENTY",
         "SIM-VALID-50, FIFTY"
     })

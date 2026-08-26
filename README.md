@@ -23,7 +23,7 @@ Every command requires an `Idempotency-Key` header. Responses carry `X-Correlati
 The money endpoint accepts a trusted validator reference, not a client assertion such as `isAuthentic` or an authoritative denomination. The validator result supplies the denomination that enters escrow:
 
 ```json
-{"validatorReference": "SIM-VALID-10"}
+{"validatorReference": "SIM-VALID-10-DEMO-001"}
 ```
 
 ## Build
@@ -66,13 +66,13 @@ Docker Compose also enables the explicit `demo` profile. Its deterministic curre
 
 | Reference | Result |
 |---|---|
-| `SIM-VALID-5`, `SIM-VALID-10`, `SIM-VALID-20`, `SIM-VALID-50` | Accepted with the corresponding authoritative denomination |
+| `SIM-VALID-5-<unique-token>`, `SIM-VALID-10-<unique-token>`, `SIM-VALID-20-<unique-token>`, `SIM-VALID-50-<unique-token>` | Accepted with the corresponding authoritative denomination |
 | `SIM-COUNTERFEIT` | Rejected as counterfeit |
 | `SIM-UNREADABLE` | Rejected as unreadable |
 | `SIM-UNSUPPORTED` | Rejected as unsupported denomination |
 | `SIM-OFFLINE` | Validator unavailable |
 
-Unknown references are rejected. Outside the `demo` profile the bundled validator fails closed with `503 CURRENCY_VALIDATION_UNAVAILABLE`; a real deployment must replace it with an authenticated hardware integration. Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
+Each full accepted reference represents one physical insertion and is single-use per machine; use a new token for every demo insertion. The unsuffixed forms remain valid but can likewise be consumed only once. Unknown references are rejected. Outside the `demo` profile the bundled validator fails closed with `503 CURRENCY_VALIDATION_UNAVAILABLE`; a real deployment must replace it with an authenticated hardware integration. Use Swagger UI for the complete purchase flow. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to delete local database data.
 
 ## Design notes
 

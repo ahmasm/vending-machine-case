@@ -25,6 +25,7 @@ import io.github.ahmasm.vending.machine.application.command.InsertMoneyResult;
 import io.github.ahmasm.vending.machine.application.command.RefundResult;
 import io.github.ahmasm.vending.machine.application.command.SelectProductResult;
 import io.github.ahmasm.vending.machine.application.command.StartSessionResult;
+import io.github.ahmasm.vending.machine.application.money.CurrencyAcceptanceAlreadyConsumedException;
 import io.github.ahmasm.vending.machine.application.money.CurrencyRejectedException;
 import io.github.ahmasm.vending.machine.application.money.CurrencyValidationUnavailableException;
 import io.github.ahmasm.vending.machine.application.money.InsertMoneyCommand;
@@ -196,9 +197,12 @@ class VendingCommandControllerTest {
                 .andExpect(jsonPath("$.slotCode").value("A2"))
                 .andExpect(jsonPath("$.product.id").value("COKE"))
                 .andExpect(jsonPath("$.product.name").value("Coke"))
-                .andExpect(jsonPath("$.price").value(35))
-                .andExpect(jsonPath("$.insertedAmount").value(50))
-                .andExpect(jsonPath("$.change.amount").value(15))
+                .andExpect(jsonPath("$.price.amount").value(35))
+                .andExpect(jsonPath("$.price.currency").value("UNIT"))
+                .andExpect(jsonPath("$.insertedAmount.amount").value(50))
+                .andExpect(jsonPath("$.insertedAmount.currency").value("UNIT"))
+                .andExpect(jsonPath("$.change.total.amount").value(15))
+                .andExpect(jsonPath("$.change.total.currency").value("UNIT"))
                 .andExpect(jsonPath("$['change']['composition']['10']").value(1))
                 .andExpect(jsonPath("$['change']['composition']['5']").value(1))
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
@@ -226,7 +230,8 @@ class VendingCommandControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.machineId").value("VM-001"))
                 .andExpect(jsonPath("$.sessionId").value(SESSION_UUID.toString()))
-                .andExpect(jsonPath("$.returnedCash.amount").value(15))
+                .andExpect(jsonPath("$.returnedCash.total.amount").value(15))
+                .andExpect(jsonPath("$.returnedCash.total.currency").value("UNIT"))
                 .andExpect(jsonPath("$['returnedCash']['composition']['10']").value(1))
                 .andExpect(jsonPath("$['returnedCash']['composition']['5']").value(1))
                 .andExpect(jsonPath("$.status").value("REFUNDED"));
@@ -444,6 +449,26 @@ class VendingCommandControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.code").value("CURRENCY_REJECTED"))
                 .andExpect(jsonPath("$.reason").value("COUNTERFEIT"));
+    }
+
+    @Test
+    void consumedCurrencyAcceptanceReturnsConflictProblem() throws Exception {
+        when(insertMoneyUseCase.handle(any()))
+                .thenThrow(new CurrencyAcceptanceAlreadyConsumedException(MACHINE_ID));
+
+        mockMvc.perform(post(
+                                "/api/v1/machines/{machineId}/sessions/{sessionId}/money",
+                                MACHINE_ID.value(),
+                                SESSION_UUID)
+                        .header("Idempotency-Key", "KEY-CURRENCY-REPLAY")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"validatorReference": "SIM-VALID-10-DEMO-001"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code")
+                        .value("CURRENCY_ACCEPTANCE_ALREADY_CONSUMED"));
     }
 
     @Test

@@ -14,8 +14,8 @@ public record SelectProductResponse(
         @Schema(example = "550e8400-e29b-41d4-a716-446655440000") String sessionId,
         @Schema(example = "A2") String slotCode,
         ProductResponse product,
-        @Schema(example = "35") long price,
-        @Schema(example = "50") long insertedAmount,
+        MoneyResponse price,
+        MoneyResponse insertedAmount,
         ChangeResponse change,
         @Schema(example = "COMPLETED") String status) {
 
@@ -25,6 +25,8 @@ public record SelectProductResponse(
         Objects.requireNonNull(sessionId, "sessionId must not be null");
         Objects.requireNonNull(slotCode, "slotCode must not be null");
         Objects.requireNonNull(product, "product must not be null");
+        Objects.requireNonNull(price, "price must not be null");
+        Objects.requireNonNull(insertedAmount, "insertedAmount must not be null");
         Objects.requireNonNull(change, "change must not be null");
         Objects.requireNonNull(status, "status must not be null");
     }
@@ -45,9 +47,10 @@ public record SelectProductResponse(
                 purchase.slotCode().value(),
                 new ProductResponse(
                         purchase.product().id().value(), purchase.product().name()),
-                purchase.product().price().amount(),
-                purchase.insertedAmount().amount(),
-                new ChangeResponse(purchase.change().total().amount(), Map.copyOf(composition)),
+                MoneyResponse.from(purchase.product().price()),
+                MoneyResponse.from(purchase.insertedAmount()),
+                new ChangeResponse(
+                        MoneyResponse.from(purchase.change().total()), Map.copyOf(composition)),
                 "COMPLETED");
     }
 }

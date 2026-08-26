@@ -15,6 +15,7 @@ This is the concise source of truth for product assumptions. Contradicting chang
 - Currency is `UNIT`; amounts are immutable `long` minor units, never `double` or `float`.
 - Supported denominations are `5`, `10`, `20`, and `50`; quantities are bounded integers.
 - A `CurrencyValidator` boundary interface resolves a trusted validator reference before mutation. Only an accepted result supplies the authoritative denomination to the aggregate.
+- Each accepted validator reference identifies one physical acceptance and is transactionally single-use per machine; only its hash is persisted.
 - The deterministic validator simulator is enabled only by the explicit `demo` profile. Non-demo runtime fails closed until an authenticated hardware integration replaces it.
 - Accepted money stays in session escrow. Refund returns the same denomination composition.
 - `VendingMachine` is the consistency boundary for session, stock, escrow, and cash mutations.
@@ -31,6 +32,7 @@ This is the concise source of truth for product assumptions. Contradicting chang
 - Root `@Version` plus mutation-time `OPTIMISTIC_FORCE_INCREMENT` detects child-only conflicts.
 - A successful command commits machine state, purchase when applicable, and processed result in one local transaction.
 - State-changing HTTP calls require a machine-scoped `Idempotency-Key`; same request replays, different payload conflicts.
+- Successful processed-command results and consumed validator-reference hashes have no automatic expiry in the case delivery. Cleanup requires explicit retry and anti-replay SLAs because deleting a record ends protection for that key or reference.
 - Successful state changes may emit framework-independent domain events. Application handlers run synchronously inside the originating transaction when the event has a current business consequence.
 - `PurchaseCompleted` is handled in-process to persist the immutable purchase. Handler failure rolls back machine state and the processed command with the same transaction.
 - Current application events are not durably retained or replayable; events without a subscriber are discarded after dispatch while their authoritative aggregate outcome remains persisted.

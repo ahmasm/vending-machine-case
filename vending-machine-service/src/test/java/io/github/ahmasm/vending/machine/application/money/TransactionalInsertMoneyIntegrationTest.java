@@ -104,6 +104,31 @@ class TransactionalInsertMoneyIntegrationTest {
     }
 
     @Test
+    void sameValidatorReferenceWithDifferentIdempotencyKeysCreditsMoneyOnce() {
+        var machineId = new MachineId("VM-VALIDATION-REPLAY");
+        var sessionId = new SessionId("SES-VALIDATION-REPLAY");
+        persistActiveMachine(machineId, sessionId);
+        var handler = handler((ignoredMachineId, ignoredReference) ->
+                new CurrencyValidation.Accepted(TEN));
+
+        var first = handler.handle(command(
+                machineId,
+                sessionId,
+                "SIM-VALID-10-INSERT-001",
+                new IdempotencyKey("KEY-VALIDATION-FIRST")));
+
+        assertEquals(new InsertMoneyResult(Money.of(10, UNIT)), first);
+        assertThrows(
+                CurrencyAcceptanceAlreadyConsumedException.class,
+                () -> handler.handle(command(
+                        machineId,
+                        sessionId,
+                        "SIM-VALID-10-INSERT-001",
+                        new IdempotencyKey("KEY-VALIDATION-SECOND"))));
+        assertPersistedEffect(machineId, 1);
+    }
+
+    @Test
     void concurrentSameKeyCommandsProduceOneMutationAndOneResult()
             throws Exception {
         var machineId = new MachineId("VM-CONCURRENT-COMMAND");
@@ -181,6 +206,9 @@ class TransactionalInsertMoneyIntegrationTest {
         assertEquals(
                 expectedEffects,
                 count("processed_command", "machine_id", machineId.value()));
+        assertEquals(
+                expectedEffects,
+                count("currency_acceptance", "machine_id", machineId.value()));
         assertEquals(
                 (long) expectedEffects,
                 jdbcTemplate.queryForObject(

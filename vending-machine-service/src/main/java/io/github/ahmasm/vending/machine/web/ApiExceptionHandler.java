@@ -2,6 +2,7 @@ package io.github.ahmasm.vending.machine.web;
 
 import io.github.ahmasm.vending.machine.application.command.IdempotencyKeyReusedException;
 import io.github.ahmasm.vending.machine.application.command.MachineNotFoundException;
+import io.github.ahmasm.vending.machine.application.money.CurrencyAcceptanceAlreadyConsumedException;
 import io.github.ahmasm.vending.machine.application.money.CurrencyRejectedException;
 import io.github.ahmasm.vending.machine.application.money.CurrencyValidationUnavailableException;
 import io.github.ahmasm.vending.machine.application.purchase.PurchaseNotFoundException;
@@ -166,6 +167,17 @@ public final class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 "The inserted money was rejected",
                 request,
                 Map.of("reason", exception.reason().name()));
+    }
+
+    @ExceptionHandler(CurrencyAcceptanceAlreadyConsumedException.class)
+    ResponseEntity<ProblemDetail> handleCurrencyAcceptanceAlreadyConsumed(
+            CurrencyAcceptanceAlreadyConsumedException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.CONFLICT,
+                "Currency acceptance already consumed",
+                "CURRENCY_ACCEPTANCE_ALREADY_CONSUMED",
+                "The validated currency acceptance was already used",
+                request);
     }
 
     @ExceptionHandler(CurrencyValidationUnavailableException.class)

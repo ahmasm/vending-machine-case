@@ -175,9 +175,12 @@ class TransactionalSelectProductIntegrationTest {
                 .andExpect(jsonPath("$.slotCode").value(SLOT_CODE.value()))
                 .andExpect(jsonPath("$.product.id").value(PRODUCT_ID.value()))
                 .andExpect(jsonPath("$.product.name").value("Cola"))
-                .andExpect(jsonPath("$.price").value(35))
-                .andExpect(jsonPath("$.insertedAmount").value(50))
-                .andExpect(jsonPath("$.change.amount").value(15))
+                .andExpect(jsonPath("$.price.amount").value(35))
+                .andExpect(jsonPath("$.price.currency").value("UNIT"))
+                .andExpect(jsonPath("$.insertedAmount.amount").value(50))
+                .andExpect(jsonPath("$.insertedAmount.currency").value("UNIT"))
+                .andExpect(jsonPath("$.change.total.amount").value(15))
+                .andExpect(jsonPath("$.change.total.currency").value("UNIT"))
                 .andExpect(jsonPath("$['change']['composition']['10']").value(1))
                 .andExpect(jsonPath("$['change']['composition']['5']").value(1))
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
@@ -226,7 +229,8 @@ class TransactionalSelectProductIntegrationTest {
                                 machineId.value(),
                                 purchase.transactionId().value()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.change.amount").value(0))
+                .andExpect(jsonPath("$.change.total.amount").value(0))
+                .andExpect(jsonPath("$.change.total.currency").value("UNIT"))
                 .andExpect(jsonPath("$.change.composition").isEmpty());
     }
 

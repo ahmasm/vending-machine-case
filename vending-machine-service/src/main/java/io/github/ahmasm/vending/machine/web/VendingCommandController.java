@@ -1,7 +1,6 @@
 package io.github.ahmasm.vending.machine.web;
 
 import io.github.ahmasm.vending.machine.web.model.ApiProblem;
-import io.github.ahmasm.vending.machine.web.model.CurrencyCode;
 import io.github.ahmasm.vending.machine.web.model.InsertMoneyRequest;
 import io.github.ahmasm.vending.machine.web.model.InsertMoneyResponse;
 import io.github.ahmasm.vending.machine.web.model.MoneyResponse;
@@ -302,9 +301,7 @@ public class VendingCommandController {
     }
 
     private static InsertMoneyResponse toResponse(InsertMoneyResult result) {
-        return new InsertMoneyResponse(new MoneyResponse(
-                result.balance().amount(),
-                CurrencyCode.valueOf(result.balance().currency().name())));
+        return new InsertMoneyResponse(MoneyResponse.from(result.balance()));
     }
 
     private static SelectProductResponse toResponse(SelectProductResult result) {
@@ -316,7 +313,7 @@ public class VendingCommandController {
                 command.machineId().value(),
                 command.sessionId().value(),
                 new ReturnedCashResponse(
-                        result.returnedCash().total().amount(),
+                        MoneyResponse.from(result.returnedCash().total()),
                         compositionOf(result.returnedCash())),
                 "REFUNDED");
     }

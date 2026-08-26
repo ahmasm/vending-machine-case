@@ -6,10 +6,11 @@ import java.util.Objects;
 
 @Schema(name = "Change")
 public record ChangeResponse(
-        @Schema(example = "15") long amount,
+        MoneyResponse total,
         Map<String, Integer> composition) {
 
     public ChangeResponse {
+        Objects.requireNonNull(total, "total must not be null");
         composition = Map.copyOf(
                 Objects.requireNonNull(composition, "composition must not be null"));
     }

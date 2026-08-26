@@ -1,7 +1,6 @@
 package io.github.ahmasm.vending.machine.web;
 
 import io.github.ahmasm.vending.machine.web.model.ApiProblem;
-import io.github.ahmasm.vending.machine.web.model.CurrencyCode;
 import io.github.ahmasm.vending.machine.web.model.ListProductsResponse;
 import io.github.ahmasm.vending.machine.web.model.ListProductsResponse.ProductAvailabilityResponse;
 import io.github.ahmasm.vending.machine.web.model.MoneyResponse;
@@ -89,10 +88,7 @@ public class VendingQueryController {
                         new ProductResponse(
                                 product.product().id().value(),
                                 product.product().name()),
-                        new MoneyResponse(
-                                product.product().price().amount(),
-                                CurrencyCode.valueOf(
-                                        product.product().price().currency().name())),
+                        MoneyResponse.from(product.product().price()),
                         product.availability().name()))
                 .toList();
         return ResponseEntity.ok(new ListProductsResponse(result.machineId().value(), products));
@@ -134,8 +130,7 @@ public class VendingQueryController {
                 domainMachineId.value(),
                 state.id().value(),
                 state.status().name(),
-                new MoneyResponse(
-                        state.escrow().total().amount(), CurrencyCode.UNIT),
+                MoneyResponse.from(state.escrow().total()),
                 state.startedAt(),
                 state.lastActivityAt()));
     }
